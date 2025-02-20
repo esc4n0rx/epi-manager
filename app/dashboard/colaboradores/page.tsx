@@ -94,7 +94,6 @@ export default function ColaboradoresPage() {
         onOpenChange={(open) => {
           setIsModalOpen(open);
           if (!open) {
-            // Atualiza a lista ao fechar o modal, caso um novo colaborador tenha sido adicionado
             fetchColaboradores();
           }
         }}

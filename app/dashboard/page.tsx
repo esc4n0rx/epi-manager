@@ -1,26 +1,54 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { PlusCircle, Users, ClipboardList, FileCheck } from "lucide-react"
-import { motion } from "framer-motion"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ClipboardList, FileCheck, Users } from "lucide-react";
+import { motion } from "framer-motion";
 
 const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
-}
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const item = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
+  show: { opacity: 1, y: 0 },
+};
+
+interface DashboardData {
+  totalFichas: number;
+  percentDiffMonth: string;
+  fichasToday: number;
+  diffToday: number;
+  totalColaboradores: number;
+  diffColab: number;
 }
 
 export default function DashboardPage() {
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const res = await fetch("/api/dashboard");
+        const dashboardData = await res.json();
+        setData(dashboardData);
+      } catch (error) {
+        console.error("Erro ao buscar dados do dashboard:", error);
+      }
+    }
+    fetchDashboard();
+  }, []);
+
+  if (!data) {
+    return <div>Carregando dados do dashboard...</div>;
+  }
+
   return (
     <div className="h-full px-4 py-6 lg:px-8">
       <motion.div
@@ -38,9 +66,9 @@ export default function DashboardPage() {
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">245</div>
+              <div className="text-2xl font-bold">{data.totalFichas}</div>
               <p className="text-xs text-muted-foreground">
-                +20% em relação ao mês anterior
+                {data.percentDiffMonth}% em relação ao mês anterior
               </p>
             </CardContent>
           </Card>
@@ -54,9 +82,9 @@ export default function DashboardPage() {
               <FileCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">{data.fichasToday}</div>
               <p className="text-xs text-muted-foreground">
-                +3 em relação a ontem
+                {data.diffToday > 0 ? `+${data.diffToday}` : data.diffToday} em relação a ontem
               </p>
             </CardContent>
           </Card>
@@ -70,22 +98,14 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">123</div>
+              <div className="text-2xl font-bold">{data.totalColaboradores}</div>
               <p className="text-xs text-muted-foreground">
-                +5 novos esta semana
+                {data.diffColab > 0 ? `+${data.diffColab}` : data.diffColab} novos esta semana
               </p>
             </CardContent>
           </Card>
         </motion.div>
       </motion.div>
-
-      <Button
-        className="fixed bottom-8 right-8 shadow-lg transition-transform hover:scale-105"
-        size="lg"
-      >
-        <PlusCircle className="mr-2 h-5 w-5" />
-        Gerar Nova Ficha
-      </Button>
     </div>
-  )
+  );
 }

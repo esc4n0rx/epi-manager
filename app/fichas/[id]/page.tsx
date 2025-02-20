@@ -22,7 +22,6 @@ interface Ficha {
 export default function FichaPage() {
   const { id } = useParams();
   const [ficha, setFicha] = useState<Ficha | null>(null);
-  const [assinatura, setAssinatura] = useState("");
   const [loading, setLoading] = useState(false);
   const signaturePadRef = useRef<SignatureCanvas>(null);
 
@@ -43,16 +42,22 @@ export default function FichaPage() {
     }
   }, [id]);
 
+  // Quando a ficha é carregada, se já existir uma assinatura, preenche o canvas
+  useEffect(() => {
+    if (ficha && ficha.assinatura && signaturePadRef.current) {
+      signaturePadRef.current.fromDataURL(ficha.assinatura);
+    }
+  }, [ficha]);
+
   const handleAssinar = async () => {
     if (signaturePadRef.current) {
-      const dataURL = signaturePadRef.current.toDataURL("image/png");
-      setAssinatura(dataURL);
+      const canvas = signaturePadRef.current.toDataURL("image/png");
       setLoading(true);
       try {
         const res = await fetch(`/api/ficha/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ assinatura: dataURL }),
+          body: JSON.stringify({ assinatura: canvas }),
         });
         if (res.ok) {
           alert("Ficha assinada com sucesso!");
@@ -109,11 +114,11 @@ export default function FichaPage() {
               ref={signaturePadRef}
               canvasProps={{
                 className: "w-full h-64 sm:h-80",
-                style: { backgroundColor: "white" },
+                style: { backgroundColor: "white", color: "black" },
               }}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-4">
             <Button onClick={handleAssinar} disabled={loading}>
               {loading ? "Salvando assinatura..." : "Assinar"}
             </Button>

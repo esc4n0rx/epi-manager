@@ -1,8 +1,7 @@
-// app/api/ficha/[id]/route.ts
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Recupera as variáveis de ambiente
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -10,7 +9,6 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 }
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-// GET: Retorna a ficha específica, com dados do EPI (faz join com tabela epi)
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -31,8 +29,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PUT: Atualiza a ficha com a assinatura e altera o status para "Concluido"
-// Além disso, atualiza a assinatura na tabela epi_colaborador do colaborador correspondente (usando a matrícula)
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -42,7 +38,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Assinatura é obrigatória." }, { status: 400 });
     }
 
-    // Atualiza a ficha: define a assinatura e altera o status para "Concluido"
     const { data: fichaData, error: fichaError } = await supabase
       .from("ficha")
       .update({ assinatura, status: "Concluido" })
@@ -55,7 +50,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: fichaError.message }, { status: 500 });
     }
 
-    // Atualiza a assinatura do colaborador na tabela epi_colaborador, usando a matrícula registrada na ficha
     const { colaborador_matricula } = fichaData;
     const { error: colabError } = await supabase
       .from("epi_colaborador")

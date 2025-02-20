@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface NovaFichaModalProps {
   open: boolean;
@@ -32,6 +34,8 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
   const [quantidade, setQuantidade] = useState("");
   const [dataEntrega, setDataEntrega] = useState("");
   const [epiOptions, setEpiOptions] = useState<any[]>([]);
+  const [success, setSuccess] = useState(false);
+  const [fichaLink, setFichaLink] = useState("");
 
   // Busca os EPIs disponíveis
   useEffect(() => {
@@ -81,7 +85,7 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
       quantidade: Number(quantidade),
       data_entrega: dataEntrega,
     };
-  
+
     try {
       const res = await fetch("/api/ficha", {
         method: "POST",
@@ -93,17 +97,23 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
       if (res.ok) {
         const fichaCriada = await res.json();
         if (Array.isArray(fichaCriada) && fichaCriada.length > 0) {
-          const fichaLink = `${window.location.origin}/fichas/${fichaCriada[0].id}`;
-          alert(`Ficha gerada com sucesso! Acesse: ${fichaLink}`);
+          const link = `${window.location.origin}/fichas/${fichaCriada[0].id}`;
+          setFichaLink(link);
+          setSuccess(true);
+          // Fecha o modal após 3 segundos (ou você pode deixar o usuário clicar no botão)
+          setTimeout(() => {
+            onOpenChange(false);
+            setSuccess(false);
+          }, 3000);
         } else {
           console.error("Nenhuma ficha foi retornada.");
         }
+        // Limpa os campos
         setMatricula("");
         setColaboradorNome("");
         setEpiId("");
         setQuantidade("");
         setDataEntrega("");
-        onOpenChange(false);
       } else {
         console.error("Erro ao gerar ficha");
       }
@@ -121,63 +131,79 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
             Preencha os dados para gerar uma nova ficha de EPI
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Matrícula do Colaborador</Label>
-              <Input
-                placeholder="Digite a matrícula"
-                value={matricula}
-                onChange={(e) => setMatricula(e.target.value)}
-                onKeyDown={handleMatriculaKeyDown}
-              />
+        {success ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="flex flex-col items-center justify-center py-8"
+          >
+            <div className="text-2xl font-bold text-green-600 mb-4">
+              Ficha gerada com sucesso!
             </div>
-            {colaboradorNome && (
+            <Link href={fichaLink}>
+              <Button>Visualizar Ficha</Button>
+            </Link>
+          </motion.div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Nome do Colaborador</Label>
-                <Input value={colaboradorNome} readOnly />
+                <Label>Matrícula do Colaborador</Label>
+                <Input
+                  placeholder="Digite a matrícula"
+                  value={matricula}
+                  onChange={(e) => setMatricula(e.target.value)}
+                  onKeyDown={handleMatriculaKeyDown}
+                />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label>EPIs</Label>
-              <Select value={epiId} onValueChange={setEpiId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o EPI" />
-                </SelectTrigger>
-                <SelectContent>
-                  {epiOptions.map((epi) => (
-                    <SelectItem key={epi.id} value={epi.id.toString()}>
-                      {epi.nome} (CA: {epi.ca}) - {epi.validade} meses - Estoque: {epi.estoque}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {colaboradorNome && (
+                <div className="space-y-2">
+                  <Label>Nome do Colaborador</Label>
+                  <Input value={colaboradorNome} readOnly />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label>EPIs</Label>
+                <Select value={epiId} onValueChange={setEpiId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o EPI" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {epiOptions.map((epi) => (
+                      <SelectItem key={epi.id} value={epi.id.toString()}>
+                        {epi.nome} (CA: {epi.ca}) - {epi.validade} meses - Estoque: {epi.estoque}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Quantidade</Label>
+                <Input
+                  type="number"
+                  placeholder="Quantidade"
+                  value={quantidade}
+                  onChange={(e) => setQuantidade(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Data de Entrega</Label>
+                <Input
+                  type="date"
+                  value={dataEntrega}
+                  onChange={(e) => setDataEntrega(e.target.value)}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Quantidade</Label>
-              <Input
-                type="number"
-                placeholder="Quantidade"
-                value={quantidade}
-                onChange={(e) => setQuantidade(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Data de Entrega</Label>
-              <Input
-                type="date"
-                value={dataEntrega}
-                onChange={(e) => setDataEntrega(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit">Gerar Ficha</Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">Gerar Ficha</Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -82,7 +82,6 @@ export default function FichasPage() {
         onOpenChange={(open) => {
           setIsModalOpen(open);
           if (!open) {
-            // Atualiza a lista ao fechar o modal
             fetchFichas();
           }
         }}

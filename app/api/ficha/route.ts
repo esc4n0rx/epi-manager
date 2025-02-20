@@ -1,8 +1,7 @@
-// app/api/ficha/route.ts
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Recupera as variáveis de ambiente do lado do servidor
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -12,7 +11,6 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-// GET: Retorna todas as fichas (fazendo um join opcional com a tabela epi para obter dados como o CA)
 export async function GET() {
   try {
     const { data, error } = await supabase
@@ -30,7 +28,6 @@ export async function GET() {
   }
 }
 
-// POST: Cria uma nova ficha
 export async function POST(request: Request) {
     try {
       const body = await request.json();
@@ -40,7 +37,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Todos os campos são obrigatórios." }, { status: 400 });
       }
       
-      // Use .select() para retornar o registro inserido
       const { data, error } = await supabase
         .from("ficha")
         .insert([{ 
