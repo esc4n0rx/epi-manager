@@ -16,8 +16,6 @@ interface Ficha {
   quantidade: number;
   data_entrega: string;
   status: string;
-  // Essa propriedade vem da tabela "ficha" (se houver), mas
-  // a assinatura principal está na tabela "epi_colaborador".
   assinatura?: string;
 }
 
@@ -27,7 +25,6 @@ export default function FichaPage() {
   const [loading, setLoading] = useState(false);
   const signaturePadRef = useRef<SignatureCanvas>(null);
 
-  // Busca os dados da ficha
   const fetchFicha = async () => {
     try {
       const res = await fetch(`/api/ficha/${id}`);
@@ -38,7 +35,6 @@ export default function FichaPage() {
     }
   };
 
-  // Busca os dados do colaborador para recuperar a assinatura
   const fetchAssinaturaColaborador = async (matricula: string) => {
     try {
       const res = await fetch(`/api/colaborador?matricula=${matricula}`);
@@ -46,7 +42,6 @@ export default function FichaPage() {
       if (Array.isArray(data) && data.length > 0) {
         const colaborador = data[0];
         if (colaborador.assinatura) {
-          // Se houver assinatura, preenche o canvas
           signaturePadRef.current?.fromDataURL(colaborador.assinatura);
         }
       }
@@ -61,7 +56,6 @@ export default function FichaPage() {
     }
   }, [id]);
 
-  // Depois de carregar a ficha, busca a assinatura do colaborador (se existir)
   useEffect(() => {
     if (ficha && ficha.colaborador_matricula) {
       fetchAssinaturaColaborador(ficha.colaborador_matricula);
