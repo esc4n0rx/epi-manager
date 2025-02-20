@@ -1,4 +1,4 @@
-// app/api/registros/route.ts
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -19,7 +19,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 export async function GET() {
   try {
-    // Define os limites do dia atual
     const startToday = new Date();
     startToday.setHours(0, 0, 0, 0);
     const endToday = new Date(startToday);
@@ -27,7 +26,6 @@ export async function GET() {
 
     const logs: LogEntry[] = [];
 
-    // Consulta: Novos colaboradores adicionados hoje
     const { data: colabData, error: colabError } = await supabase
       .from("epi_colaborador")
       .select("nome_completo, cpf, matricula, cargo, created_at")
@@ -45,7 +43,6 @@ export async function GET() {
       logs.push(...colabLogs);
     }
 
-    // Consulta: Novas fichas geradas hoje
     const { data: fichaData, error: fichaError } = await supabase
       .from("ficha")
       .select("colaborador_matricula, quantidade, status, created_at")
@@ -63,7 +60,6 @@ export async function GET() {
       logs.push(...fichaLogs);
     }
 
-    // Consulta: Novos EPIs cadastrados hoje
     const { data: epiData, error: epiError } = await supabase
       .from("epi")
       .select("nome, ca, validade, estoque, created_at")
@@ -81,7 +77,6 @@ export async function GET() {
       logs.push(...epiLogs);
     }
 
-    // Ordena os logs por data, do mais recente para o mais antigo
     logs.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
     return NextResponse.json(logs);

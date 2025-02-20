@@ -117,10 +117,10 @@ export function NovoColaboradorModal({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="producao">Produção</SelectItem>
-                  <SelectItem value="manutencao">Manutenção</SelectItem>
-                  <SelectItem value="administrativo">
-                    Administrativo
-                  </SelectItem>
+                  <SelectItem value="mercearia">Mercearia</SelectItem>
+                  <SelectItem value="perecivies">Perecívies</SelectItem>
+                  <SelectItem value="transporte">Transporte</SelectItem>
+                  <SelectItem value="administrativo">Administrativo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
