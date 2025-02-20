@@ -14,21 +14,32 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) {
-      return NextResponse.json({ error: "ID da ficha não fornecido." }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID da ficha não fornecido." },
+        { status: 400 }
+      );
     }
     const { data, error } = await supabase
       .from("ficha")
-      .select("*, epi (nome, ca)")
+      .select(
+        "*, epi (nome, ca, validade, estoque), epi_colaborador (nome_completo, cpf, cargo, matricula)"
+      )
       .eq("id", id)
       .single();
 
     if (error) {
       console.error("Erro ao buscar detalhe da ficha:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
     }
     return NextResponse.json(data);
   } catch (err: any) {
     console.error("Erro inesperado na rota GET de detalhe da ficha:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
   }
 }
