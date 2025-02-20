@@ -14,10 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Plus } from "lucide-react";
 import { NovaFichaModal } from "@/components/modals/nova-ficha-modal";
 import { useState, useEffect } from "react";
+import FichaDetalheModal from "@/components/modals/FichaDetalheModal";
 
 export default function FichasPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fichas, setFichas] = useState<any[]>([]);
+  const [selectedFichaId, setSelectedFichaId] = useState<number | null>(null);
+  const [isDetalheOpen, setIsDetalheOpen] = useState(false);
 
   const fetchFichas = async () => {
     try {
@@ -32,6 +35,11 @@ export default function FichasPage() {
   useEffect(() => {
     fetchFichas();
   }, []);
+
+  const handleVisualizar = (id: number) => {
+    setSelectedFichaId(id);
+    setIsDetalheOpen(true);
+  };
 
   return (
     <div className="h-full p-8">
@@ -68,7 +76,11 @@ export default function FichasPage() {
                 <Badge variant="secondary">{ficha.status}</Badge>
               </TableCell>
               <TableCell>
-                <Button variant="ghost" size="sm">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleVisualizar(ficha.id)}
+                >
                   Visualizar
                 </Button>
               </TableCell>
@@ -86,6 +98,14 @@ export default function FichasPage() {
           }
         }}
       />
+
+      {selectedFichaId !== null && (
+        <FichaDetalheModal
+          open={isDetalheOpen}
+          onClose={() => setIsDetalheOpen(false)}
+          fichaId={selectedFichaId}
+        />
+      )}
     </div>
   );
 }

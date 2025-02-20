@@ -39,7 +39,6 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
   const [fichaLink, setFichaLink] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Busca os EPIs disponíveis
   useEffect(() => {
     const fetchEPIs = async () => {
       try {
@@ -56,15 +55,21 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
     fetchEPIs();
   }, []);
 
-  // Ao pressionar Enter na matrícula, busca o nome do colaborador via API
   const handleMatriculaKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && matricula) {
-      e.preventDefault(); // Evita o submit do formulário
+      e.preventDefault();
       try {
-        const res = await fetch(`/api/colaborador?matricula=${matricula}`);
+        const res = await fetch("/api/colaborador");
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          setColaboradorNome(data[0].nome_completo);
+        if (Array.isArray(data)) {
+          const filtered = data.filter(
+            (colab: any) => colab.matricula === matricula
+          );
+          if (filtered.length > 0) {
+            setColaboradorNome(filtered[0].nome_completo);
+          } else {
+            setColaboradorNome("Colaborador não encontrado");
+          }
         } else {
           setColaboradorNome("Colaborador não encontrado");
         }
@@ -74,6 +79,7 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
       }
     }
   };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
