@@ -16,6 +16,8 @@ interface Ficha {
   quantidade: number;
   data_entrega: string;
   status: string;
+  // Essa propriedade vem da tabela "ficha" (se houver), mas
+  // a assinatura principal está na tabela "epi_colaborador".
   assinatura?: string;
 }
 
@@ -36,28 +38,45 @@ export default function FichaPage() {
     }
   };
 
+  // Busca os dados do colaborador para recuperar a assinatura
+  const fetchAssinaturaColaborador = async (matricula: string) => {
+    try {
+      const res = await fetch(`/api/colaborador?matricula=${matricula}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const colaborador = data[0];
+        if (colaborador.assinatura) {
+          // Se houver assinatura, preenche o canvas
+          signaturePadRef.current?.fromDataURL(colaborador.assinatura);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar colaborador para assinatura:", error);
+    }
+  };
+
   useEffect(() => {
     if (id) {
       fetchFicha();
     }
   }, [id]);
 
-  // Quando a ficha é carregada, se já existir uma assinatura, preenche o canvas
+  // Depois de carregar a ficha, busca a assinatura do colaborador (se existir)
   useEffect(() => {
-    if (ficha && ficha.assinatura && signaturePadRef.current) {
-      signaturePadRef.current.fromDataURL(ficha.assinatura);
+    if (ficha && ficha.colaborador_matricula) {
+      fetchAssinaturaColaborador(ficha.colaborador_matricula);
     }
   }, [ficha]);
 
   const handleAssinar = async () => {
     if (signaturePadRef.current) {
-      const canvas = signaturePadRef.current.toDataURL("image/png");
+      const canvasData = signaturePadRef.current.toDataURL("image/png");
       setLoading(true);
       try {
         const res = await fetch(`/api/ficha/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ assinatura: canvas }),
+          body: JSON.stringify({ assinatura: canvasData }),
         });
         if (res.ok) {
           alert("Ficha assinada com sucesso!");
@@ -74,9 +93,7 @@ export default function FichaPage() {
   };
 
   const limparAssinatura = () => {
-    if (signaturePadRef.current) {
-      signaturePadRef.current.clear();
-    }
+    signaturePadRef.current?.clear();
   };
 
   if (!ficha) {

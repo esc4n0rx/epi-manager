@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ClipboardCopy } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -36,6 +37,7 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
   const [epiOptions, setEpiOptions] = useState<any[]>([]);
   const [success, setSuccess] = useState(false);
   const [fichaLink, setFichaLink] = useState("");
+  const [copied, setCopied] = useState(false);
 
   // Busca os EPIs disponíveis
   useEffect(() => {
@@ -100,7 +102,7 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
           const link = `${window.location.origin}/fichas/${fichaCriada[0].id}`;
           setFichaLink(link);
           setSuccess(true);
-          // Fecha o modal após 3 segundos (ou você pode deixar o usuário clicar no botão)
+          // Opcional: deixar a mensagem exibida por alguns segundos
           setTimeout(() => {
             onOpenChange(false);
             setSuccess(false);
@@ -119,6 +121,16 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
       }
     } catch (error) {
       console.error("Erro ao gerar ficha:", error);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(fichaLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Erro ao copiar para a área de transferência:", error);
     }
   };
 
@@ -141,9 +153,17 @@ export function NovaFichaModal({ open, onOpenChange }: NovaFichaModalProps) {
             <div className="text-2xl font-bold text-green-600 mb-4">
               Ficha gerada com sucesso!
             </div>
-            <Link href={fichaLink}>
-              <Button>Visualizar Ficha</Button>
-            </Link>
+            <div className="w-full flex items-center space-x-2">
+              <Input readOnly value={fichaLink} className="w-full" />
+              <Button onClick={copyToClipboard} variant="outline">
+                <ClipboardCopy className="h-4 w-4" />
+              </Button>
+            </div>
+            {copied && (
+              <div className="text-sm text-green-600 mt-2">
+                Link copiado para a área de transferência!
+              </div>
+            )}
           </motion.div>
         ) : (
           <form onSubmit={handleSubmit}>
