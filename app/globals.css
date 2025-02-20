@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+@media print {
+  #pdf-content {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  #pdf-content h2 {
+    color: black !important;
+  }
+
+  #pdf-content .bg-black {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  #pdf-content .text-white {
+    color: black !important;
+  }
+}
+
+@media print {
+  table {
+    border-collapse: collapse !important;
+    width: 100%;
+  }
+
+  table, th, td {
+    border: 1px solid black !important;
+  }
+
+  th, td {
+    background-color: white !important;
+    color: black !important;
+    padding: 5px !important;
+  }
+}
+
+
 
 .signature-canvas {
   border: 1px solid #ccc;
